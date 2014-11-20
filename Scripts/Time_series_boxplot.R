@@ -1,30 +1,38 @@
 # Load libraries ----------------------------------------------------------
+library(dplyr)
+library(reshape)
+library(reshape2)
 library(ggplot2)
 
 # Read data ---------------------------------------------------------------
 setwd("./Data")
-data <- read.csv("FRRF_time_series_Thesis.csv", header = TRUE)
+data <- read.csv("FRRF_time_series_Thesis_combined.csv", header = TRUE)
 setwd("../")
 
-# Convert to date type ----------------------------------------------------
-data$Date <- as.Date(data$Date, format="%d/%m/%Y")
+# # Convert to date type ----------------------------------------------------
+# data$Date <- as.Date(data$Date, format="%d/%m/%Y")
+
+# Melt dataset ------------------------------------------------------------
+data <- melt(data, id.vars = c("Date", "Strain", "Location", "Replicate"))
+
+# Select variables for plotting -------------------------------------------
+data <- filter(data, variable == "Sigma" | variable == "Fv.Fm.or.Fq..Fm.")
+
+# Change variable names and order -----------------------------------------
+Stats$variable <- factor(Stats$variable, levels = c("Fo.or.F.", "Fm.or.Fm.", "Fv.Fm.or.Fq..Fm.", "Sigma"))
+levels(Stats$variable) <- c("Fo", "Fm", "Fv/Fm", "Sigma")
 
 # Prepare for plotting ----------------------------------------------------
-plot1 <- ggplot(data = data, aes(x = Date, y = Data, group=Strain, color = Strain, shape = Strain)) +
-    facet_wrap(Experiment~Location, scale="free_y", drop=TRUE, ncol=1) +
-    geom_line() + 
-    geom_point() +
-    geom_errorbar(aes(ymin = Data - STDEV, ymax = Data + STDEV, width=0.2)) + 
-    ggtitle("Monitoring of stock cultures\n") +
-    ylab("Result\n") +
-    xlab("\nDate")
+plot1 <- ggplot(data = data, aes(x = Strain, y = value, color = Strain)) +
+    facet_grid(variable~Location, scales = "free") +
+    geom_boxplot(outlier.size = 0.1, size = 0.3) + 
+    ggtitle("Long term monitoring of stock cultures\n") +
+    ylab("Parameter\n") +
+    xlab("\nStrain")
 
 Science_theme = theme(
     axis.line = element_line(size = 0.1, color = "black"),
-    legend.justification=c(0.01,1), 
-    legend.position=c(0,1),
-    legend.background = element_blank(),
-    legend.key = element_blank(),
+    legend.position="none",
     panel.background = element_blank(),
     strip.background = element_blank(),
     axis.text.x  = element_text(color="gray16"),
@@ -33,7 +41,7 @@ Science_theme = theme(
 
 # Plot --------------------------------------------------------------------
 setwd("./Plots")
-png(filename = "Stock_culture_time_series.png", width = 600, height = 600, units = "px")
+png(filename = "Stock_culture_time_series_boxplot.png", width = 600, height = 600, units = "px")
 print(plot1 + Science_theme)
 dev.off()
 setwd("../")
