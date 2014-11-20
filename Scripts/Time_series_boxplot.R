@@ -19,13 +19,13 @@ data <- melt(data, id.vars = c("Date", "Strain", "Location", "Replicate"))
 data <- filter(data, variable == "Sigma" | variable == "Fv.Fm.or.Fq..Fm.")
 
 # Change variable names and order -----------------------------------------
-Stats$variable <- factor(Stats$variable, levels = c("Fo.or.F.", "Fm.or.Fm.", "Fv.Fm.or.Fq..Fm.", "Sigma"))
-levels(Stats$variable) <- c("Fo", "Fm", "Fv/Fm", "Sigma")
+data$variable <- factor(data$variable, levels = c("Fo.or.F.", "Fm.or.Fm.", "Fv.Fm.or.Fq..Fm.", "Sigma"))
+levels(data$variable) <- c("Fo", "Fm", "Fv/Fm", "Sigma")
 
 # Prepare for plotting ----------------------------------------------------
 plot1 <- ggplot(data = data, aes(x = Strain, y = value, color = Strain)) +
     facet_grid(variable~Location, scales = "free") +
-    geom_boxplot(outlier.size = 0.1, size = 0.3) + 
+    geom_boxplot(outlier.size = 0.5, size = 0.3) + 
     ggtitle("Long term monitoring of stock cultures\n") +
     ylab("Parameter\n") +
     xlab("\nStrain")
@@ -41,7 +41,7 @@ Science_theme = theme(
 
 # Plot --------------------------------------------------------------------
 setwd("./Plots")
-png(filename = "Stock_culture_time_series_boxplot.png", width = 600, height = 600, units = "px")
+png(filename = "Stock_culture_time_series_boxplot.png", width = 600, height = 400, units = "px")
 print(plot1 + Science_theme)
 dev.off()
 setwd("../")
